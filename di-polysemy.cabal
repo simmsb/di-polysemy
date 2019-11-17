@@ -1,0 +1,46 @@
+cabal-version: 1.18
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: ba329a865a944d6199b3b9923a3391f0e75bcbb90fe900332b81471a91497195
+
+name:           di-polysemy
+version:        0.0.0
+synopsis:       DI logger for polysemy
+description:    DI logger for polysemy
+category:       Logging
+homepage:       https://github.com/nitros12/di-polysemy
+bug-reports:    https://github.com/nitros12/di-polysemy/issues
+author:         Ben Simms
+maintainer:     ben@bensimms.moe
+copyright:      2019 Ben Simms
+license:        MIT
+license-file:   LICENSE
+tested-with:    GHC == 8.6.5
+build-type:     Simple
+extra-doc-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/nitros12/di-polysemy
+
+library
+  exposed-modules:
+      DiPolysemy
+      Prelude
+  other-modules:
+      Paths_di_polysemy
+  hs-source-dirs:
+      src
+  default-extensions: TemplateHaskell RecursiveDo CPP AllowAmbiguousTypes BlockArguments NoMonomorphismRestriction AutoDeriveTypeable BangPatterns BinaryLiterals UndecidableInstances ConstraintKinds DataKinds DefaultSignatures DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric DeriveTraversable DoAndIfThenElse EmptyDataDecls ExistentialQuantification FlexibleContexts FlexibleInstances FunctionalDependencies GADTs DerivingVia DerivingStrategies GeneralizedNewtypeDeriving StandaloneDeriving DeriveAnyClass InstanceSigs KindSignatures LambdaCase MonadFailDesugaring MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings OverloadedLabels PartialTypeSignatures PatternGuards PolyKinds RankNTypes RecordWildCards ScopedTypeVariables TupleSections TypeFamilies TypeSynonymInstances ViewPatterns DuplicateRecordFields TypeOperators TypeApplications RoleAnnotations PatternSynonyms
+  ghc-options: -fplugin=Polysemy.Plugin -Wall
+  build-depends:
+      base-noprelude >=4.12
+    , polysemy >=1.2
+    , polysemy-plugin >=0.2
+    , relude
+  default-language: Haskell2010
