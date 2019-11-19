@@ -68,7 +68,7 @@ instance Ex.Exception MyThreadKilled where
 runDiToIO :: forall r level msg a.
           Members '[Embed IO] r
           => (DC.Log level D.Path msg -> IO ())
-          -> Sem (Di level D.Path msg':r) a
+          -> Sem (Di level D.Path msg ': r) a
           -> Sem r a
 runDiToIO commit m = runResource $ do
   tqLogs <- embed $ STM.newTQueueIO
@@ -107,7 +107,7 @@ runDiToIO commit m = runResource $ do
 
     go :: Member (Embed IO) r0
        => DC.Di level D.Path msg
-       -> Sem (Di level D.Path msg':r0) a0
+       -> Sem (Di level D.Path msg ': r0) a0
        -> Sem r0 a0
     go di m' = (`interpretH` m') $ \case
       Log level msg -> do
