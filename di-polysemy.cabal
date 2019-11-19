@@ -1,13 +1,13 @@
 cabal-version: 1.18
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ba329a865a944d6199b3b9923a3391f0e75bcbb90fe900332b81471a91497195
+-- hash: 31fd0eefb3582855032430f18fddae921fa8a814e5927c96d397ec75f154d875
 
 name:           di-polysemy
-version:        0.0.0
+version:        0.0.1
 synopsis:       DI logger for polysemy
 description:    DI logger for polysemy
 category:       Logging
@@ -31,7 +31,6 @@ source-repository head
 library
   exposed-modules:
       DiPolysemy
-      Prelude
   other-modules:
       Paths_di_polysemy
   hs-source-dirs:
@@ -39,8 +38,16 @@ library
   default-extensions: TemplateHaskell RecursiveDo CPP AllowAmbiguousTypes BlockArguments NoMonomorphismRestriction AutoDeriveTypeable BangPatterns BinaryLiterals UndecidableInstances ConstraintKinds DataKinds DefaultSignatures DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric DeriveTraversable DoAndIfThenElse EmptyDataDecls ExistentialQuantification FlexibleContexts FlexibleInstances FunctionalDependencies GADTs DerivingVia DerivingStrategies GeneralizedNewtypeDeriving StandaloneDeriving DeriveAnyClass InstanceSigs KindSignatures LambdaCase MonadFailDesugaring MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings OverloadedLabels PartialTypeSignatures PatternGuards PolyKinds RankNTypes RecordWildCards ScopedTypeVariables TupleSections TypeFamilies TypeSynonymInstances ViewPatterns DuplicateRecordFields TypeOperators TypeApplications RoleAnnotations PatternSynonyms
   ghc-options: -fplugin=Polysemy.Plugin -Wall
   build-depends:
-      base-noprelude >=4.12
+      base >=4.12
+    , df1 >=0.3
+    , di-core >=1.0
+    , di-df1 >=1.2
+    , di-handle >=1.0.1
     , polysemy >=1.2
     , polysemy-plugin >=0.2
     , relude
+    , safe-exceptions
+    , stm >=2.5
+    , template-haskell >=2.14
+    , true-name >=0.1
   default-language: Haskell2010

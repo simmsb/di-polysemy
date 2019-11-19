@@ -1,5 +1,5 @@
 name:                di-polysemy
-version:             0.0.0
+version:             0.0.1
 github:              "nitros12/di-polysemy"
 homepage:            https://github.com/nitros12/di-polysemy
 bug-reports:         https://github.com/nitros12/di-polysemy/issues
@@ -21,16 +21,24 @@ description:         DI logger for polysemy
 
 
 dependencies:
-  - base-noprelude >= 4.12
+  - base >= 4.12
   - relude
   - polysemy >= 1.2
   - polysemy-plugin >= 0.2
+  - di-core >= 1.0
+  - di-handle >= 1.0.1
+  - di-df1 >= 1.2
+  - df1 >= 0.3
+  - stm >= 2.5
+  - safe-exceptions
+  - true-name >= 0.1
+  - template-haskell >= 2.14
 
 library:
-    ghc-options:
-      - -fplugin=Polysemy.Plugin
-      - -Wall
-    source-dirs: src
+  ghc-options:
+    - -fplugin=Polysemy.Plugin
+    - -Wall
+  source-dirs: src
 
 default-extensions:
   - TemplateHaskell
