@@ -25,10 +25,10 @@ dependencies:
   - relude
   - polysemy >= 1.2
   - polysemy-plugin >= 0.2
-  - di-core >= 1.0
+  - di-core >= 1.0.4
   - di-handle >= 1.0.1
   - di-df1 >= 1.2
-  - df1 >= 0.3
+  - df1 >= 0.3.2
   - stm >= 2.5
   - safe-exceptions
   - true-name >= 0.1

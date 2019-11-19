@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 31fd0eefb3582855032430f18fddae921fa8a814e5927c96d397ec75f154d875
+-- hash: f2645516517eac76f3eb2a903bffc9d8154288e9d08524cb319606282a96d734
 
 name:           di-polysemy
 version:        0.0.1
@@ -39,8 +39,8 @@ library
   ghc-options: -fplugin=Polysemy.Plugin -Wall
   build-depends:
       base >=4.12
-    , df1 >=0.3
-    , di-core >=1.0
+    , df1 >=0.3.2
+    , di-core >=1.0.4
     , di-df1 >=1.2
     , di-handle >=1.0.1
     , polysemy >=1.2
