@@ -70,7 +70,7 @@ runDiToIO :: forall r level msg a.
           => (DC.Log level D.Path msg -> IO ())
           -> Sem (Di level D.Path msg ': r) a
           -> Sem r a
-runDiToIO commit m = runResource $ do
+runDiToIO commit m = resourceToIO $ do
   tqLogs <- embed $ STM.newTQueueIO
   tmvWOut <- embed $ STM.newEmptyTMVarIO
   let di = mkDi_internal (\_ _ _ -> True)

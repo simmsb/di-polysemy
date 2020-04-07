@@ -1,13 +1,13 @@
 cabal-version: 1.18
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f2645516517eac76f3eb2a903bffc9d8154288e9d08524cb319606282a96d734
+-- hash: 3969285de0936f7573a3e3ee70fa8c8d53bb5c743419c13d70b9eb9f38f8acc4
 
 name:           di-polysemy
-version:        0.0.1
+version:        0.0.2
 synopsis:       DI logger for polysemy
 description:    DI logger for polysemy
 category:       Logging
@@ -43,7 +43,7 @@ library
     , di-core >=1.0.4
     , di-df1 >=1.2
     , di-handle >=1.0.1
-    , polysemy >=1.2
+    , polysemy >=1.3
     , polysemy-plugin >=0.2
     , relude
     , safe-exceptions
