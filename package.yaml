@@ -14,10 +14,12 @@ tested-with:         GHC == 8.6.5
 
 extra-source-files:
   - README.md
+  - CHANGELOG.md
   - cabal.project
 
 extra-doc-files:
   - README.md
+  - CHANGELOG.md
 
 synopsis:           "DI logger wrapped for Polysemy"
 # To avoid duplicated efforts in documentation and dealing with the

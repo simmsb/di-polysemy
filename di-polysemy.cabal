@@ -4,10 +4,10 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c08e9d79d6d64ea30c4f550f4d4f6c9e508b16676da69d60587cd08193639ab6
+-- hash: a26476417532b3499d93bbfdf8f2381de36edf398c34fa14fa88fa79e3bfa7a7
 
 name:           di-polysemy
-version:        0.0.2
+version:        0.1.0.0
 synopsis:       DI logger wrapped for Polysemy
 description:    Please see the README on GitHub at <https://github.com/nitros12/di-polysemy>
 category:       Logging
@@ -15,16 +15,18 @@ homepage:       https://github.com/nitros12/di-polysemy
 bug-reports:    https://github.com/nitros12/di-polysemy/issues
 author:         Ben Simms
 maintainer:     ben@bensimms.moe
-copyright:      2019 Ben Simms
+copyright:      2020 Ben Simms
 license:        MIT
 license-file:   LICENSE
 tested-with:    GHC == 8.6.5
 build-type:     Simple
 extra-source-files:
     README.md
+    CHANGELOG.md
     cabal.project
 extra-doc-files:
     README.md
+    CHANGELOG.md
 
 source-repository head
   type: git
