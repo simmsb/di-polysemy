@@ -75,10 +75,10 @@ runDiToIO commit m = diToIO $ runDiIOInner commit (`go` raiseUnder m)
     go :: Member (Embed IO) r0 => DC.Di level D.Path msg -> Sem (Di level D.Path msg ': r0) a0 -> Sem r0 a0
     go di m = (`interpretH` m) $ \case
       Log level msg -> do
-        t <- embed $ DC.log di level msg
+        t <- embed @IO $ DC.log di level msg
         pureT t
       Flush         -> do
-        t <- embed $ DC.flush di
+        t <- embed @IO $ DC.flush di
         pureT t
       Push s m'     -> do
         mm <- runT m'
@@ -89,56 +89,56 @@ runDiToIO commit m = diToIO $ runDiIOInner commit (`go` raiseUnder m)
 
 runDiToStderrIO :: Member (Embed IO) r => Sem (Di D.Level D.Path D.Message ': r) a -> Sem r a
 runDiToStderrIO m = do
-  commit <- embed $ DH.stderr Df1.df1
+  commit <- embed @IO $ DH.stderr Df1.df1
   runDiToIO commit m
 
-attr :: (D.ToValue value, Member (Di level D.Path msg) r) => D.Key -> value -> Sem r a -> Sem r a
-attr k v = attr_ k (D.value v)
+attr :: forall value level msg r a. (D.ToValue value, Member (Di level D.Path msg) r) => D.Key -> value -> Sem r a -> Sem r a
+attr k v = attr_ @level @msg k (D.value v)
 
-debug :: (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-debug = log D.Debug . D.message
+debug :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
+debug = log @D.Level @path D.Debug . D.message
 
-info :: (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-info = log D.Info . D.message
+info :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
+info = log @D.Level @path D.Info . D.message
 
-notice :: (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-notice = log D.Notice . D.message
+notice :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
+notice = log @D.Level @path D.Notice . D.message
 
-warning :: (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-warning = log D.Warning . D.message
+warning :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
+warning = log @D.Level @path D.Warning . D.message
 
-error :: (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-error = log D.Error . D.message
+error :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
+error = log @D.Level @path D.Error . D.message
 
-alert :: (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-alert = log D.Alert . D.message
+alert :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
+alert = log @D.Level @path D.Alert . D.message
 
-critical :: (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-critical = log D.Critical . D.message
+critical :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
+critical = log @D.Level @path D.Critical . D.message
 
-emergency :: (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-emergency = log D.Emergency . D.message
+emergency :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
+emergency = log @D.Level @path D.Emergency . D.message
 
-debug_ :: Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-debug_ = log D.Debug
+debug_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
+debug_ = log @D.Level @path D.Debug
 
-info_ :: Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-info_ = log D.Info
+info_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
+info_ = log @D.Level @path D.Info
 
-notice_ :: Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-notice_ = log D.Notice
+notice_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
+notice_ = log @D.Level @path D.Notice
 
-warning_ :: Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-warning_ = log D.Warning
+warning_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
+warning_ = log @D.Level @path D.Warning
 
-error_ :: Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-error_ = log D.Error
+error_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
+error_ = log @D.Level @path D.Error
 
-alert_ :: Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-alert_ = log D.Alert
+alert_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
+alert_ = log @D.Level @path D.Alert
 
-critical_ :: Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-critical_ = log D.Critical
+critical_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
+critical_ = log @D.Level @path D.Critical
 
-emergency_ :: Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-emergency_ = log D.Emergency
+emergency_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
+emergency_ = log @D.Level @path D.Emergency
