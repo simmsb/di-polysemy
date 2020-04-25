@@ -1,0 +1,18 @@
+stages:
+  - build
+
+variables:
+  DOCKER_DRIVER: overlay2
+  STACK_ROOT: ${CI_PROJECT_DIR}/.stack
+
+build-backend:
+  stage: build
+  image: haskell:latest
+  cache:
+    paths:
+      - ${STACK_ROOT}
+      - .stack-work
+  script:
+    - stack
+      --stack-root ${STACK_ROOT}
+      build
