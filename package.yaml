@@ -1,5 +1,5 @@
 name:                di-polysemy
-version:             0.1.1.0
+version:             0.1.1.1
 github:              "nitros12/di-polysemy"
 homepage:            https://github.com/nitros12/di-polysemy
 bug-reports:         https://github.com/nitros12/di-polysemy/issues
@@ -10,7 +10,7 @@ maintainer:          "ben@bensimms.moe"
 copyright:           2020 Ben Simms
 category:            Logging
 build-type:          Simple
-tested-with:         GHC == 8.6.5
+tested-with:         GHC == 8.6.5, GHC == 8.8.3
 
 extra-source-files:
   - README.md
@@ -48,7 +48,6 @@ default-extensions:
   - AllowAmbiguousTypes
   - BlockArguments
   - NoMonomorphismRestriction
-  - AutoDeriveTypeable
   - BangPatterns
   - BinaryLiterals
   - UndecidableInstances
@@ -75,7 +74,6 @@ default-extensions:
   - InstanceSigs
   - KindSignatures
   - LambdaCase
-  - MonadFailDesugaring
   - MultiParamTypeClasses
   - MultiWayIf
   - NamedFieldPuns

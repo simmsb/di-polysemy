@@ -4,10 +4,10 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f161d8007cb345e44fd676ff9faabcebd48f4844b2004204f5288adb6a38f336
+-- hash: 5e0c6024816017078c59e5773fe267a297a67d481348edc0479e11938e2db792
 
 name:           di-polysemy
-version:        0.1.1.0
+version:        0.1.1.1
 synopsis:       DI logger wrapped for Polysemy
 description:    Please see the README on GitHub at <https://github.com/nitros12/di-polysemy>
 category:       Logging
@@ -18,7 +18,7 @@ maintainer:     ben@bensimms.moe
 copyright:      2020 Ben Simms
 license:        MIT
 license-file:   LICENSE
-tested-with:    GHC == 8.6.5
+tested-with:    GHC == 8.6.5, GHC == 8.8.3
 build-type:     Simple
 extra-source-files:
     README.md
@@ -39,7 +39,7 @@ library
       Paths_di_polysemy
   hs-source-dirs:
       src
-  default-extensions: TemplateHaskell RecursiveDo CPP AllowAmbiguousTypes BlockArguments NoMonomorphismRestriction AutoDeriveTypeable BangPatterns BinaryLiterals UndecidableInstances ConstraintKinds DataKinds DefaultSignatures DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric DeriveTraversable DoAndIfThenElse EmptyDataDecls ExistentialQuantification FlexibleContexts FlexibleInstances FunctionalDependencies GADTs DerivingVia DerivingStrategies GeneralizedNewtypeDeriving StandaloneDeriving DeriveAnyClass InstanceSigs KindSignatures LambdaCase MonadFailDesugaring MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings OverloadedLabels PartialTypeSignatures PatternGuards PolyKinds RankNTypes RecordWildCards ScopedTypeVariables TupleSections TypeFamilies TypeSynonymInstances ViewPatterns DuplicateRecordFields TypeOperators TypeApplications RoleAnnotations PatternSynonyms
+  default-extensions: TemplateHaskell RecursiveDo CPP AllowAmbiguousTypes BlockArguments NoMonomorphismRestriction BangPatterns BinaryLiterals UndecidableInstances ConstraintKinds DataKinds DefaultSignatures DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric DeriveTraversable DoAndIfThenElse EmptyDataDecls ExistentialQuantification FlexibleContexts FlexibleInstances FunctionalDependencies GADTs DerivingVia DerivingStrategies GeneralizedNewtypeDeriving StandaloneDeriving DeriveAnyClass InstanceSigs KindSignatures LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings OverloadedLabels PartialTypeSignatures PatternGuards PolyKinds RankNTypes RecordWildCards ScopedTypeVariables TupleSections TypeFamilies TypeSynonymInstances ViewPatterns DuplicateRecordFields TypeOperators TypeApplications RoleAnnotations PatternSynonyms
   ghc-options: -Wall
   build-depends:
       base >=4.12 && <5
