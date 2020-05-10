@@ -3,6 +3,11 @@
 `di-polysemy` uses [PVP Versioning][1].
 The changelog is available [on GitHub][2].
 
+## 0.1.2.0
+
+* 'runDiToIO' now reinterprets in terms of reader
+* The effect has been generalised and now has: Log, Flush, and Local
+
 ## 0.0.0.0
 
 * Initially created.

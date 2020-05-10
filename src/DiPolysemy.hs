@@ -4,6 +4,7 @@ module DiPolysemy
     , runDiToStderrIO
     , log
     , flush
+    , local
     , push
     , attr_
     , attr
@@ -33,19 +34,19 @@ import qualified Di.Df1                     as Df1
 import qualified Di.Handle                  as DH
 
 import           Polysemy
+import qualified Polysemy.Reader as P
 
 import           Prelude                    hiding ( error, log )
 
 data Di level path msg m a where
   Log    :: level -> msg -> Di level path msg m ()
   Flush  :: Di level path msg m ()
-  Push   :: D.Segment -> m a -> Di level D.Path msg m a
-  Attr_  :: D.Key -> D.Value -> m a -> Di level D.Path msg m a
+  Local  :: (DC.Di level path msg -> DC.Di level path msg) -> m a -> Di level path msg m a
 
 makeSem ''Di
 
 data DiIOInner m a where
-  RunDiIOInner :: (DC.Log level D.Path msg -> IO ()) -> (DC.Di level D.Path msg -> m a) -> DiIOInner m a
+  RunDiIOInner :: (DC.Log level Df1.Path msg -> IO ()) -> (DC.Di level Df1.Path msg -> m a) -> DiIOInner m a
 
 makeSem ''DiIOInner
 
@@ -67,78 +68,80 @@ diToIO = interpretH
 runDiToIO
   :: forall r level msg a.
   Member (Embed IO) r
-  => (DC.Log level D.Path msg -> IO ())
-  -> Sem (Di level D.Path msg ': r) a
+  => (DC.Log level Df1.Path msg -> IO ())
+  -> Sem (Di level Df1.Path msg ': r) a
   -> Sem r a
-runDiToIO commit m = diToIO $ runDiIOInner commit (`go` raiseUnder m)
+runDiToIO commit m = diToIO $ runDiIOInner commit (flip P.runReader $ go (raiseUnder m))
   where
-    go :: Member (Embed IO) r0 => DC.Di level D.Path msg -> Sem (Di level D.Path msg ': r0) a0 -> Sem r0 a0
-    go di m = (`interpretH` m) $ \case
+    go :: Member (Embed IO) r0 => Sem (Di level Df1.Path msg ': r0) a0 -> Sem (P.Reader (DC.Di level Df1.Path msg) ': r0) a0
+    go = reinterpretH $ \case
       Log level msg -> do
-        t <- embed @IO $ DC.log di level msg
-        pureT t
-      Flush         -> do
-        t <- embed @IO $ DC.flush di
-        pureT t
-      Push s m'     -> do
-        mm <- runT m'
-        raise $ go (Df1.push s di) mm
-      Attr_ k v m'  -> do
-        mm <- runT m'
-        raise $ go (Df1.attr_ k v di) mm
+        di <- P.ask @(DC.Di level Df1.Path msg)
+        r <- embed @IO $ DC.log di level msg
+        pureT r
+      Flush         -> P.ask @(DC.Di level Df1.Path msg) >>= embed @IO . DC.flush >>= pureT
+      Local f m     -> do
+        m' <- go <$> runT m
+        raise $ subsume $ P.local @(DC.Di level Df1.Path msg) f m'
 
-runDiToStderrIO :: Member (Embed IO) r => Sem (Di D.Level D.Path D.Message ': r) a -> Sem r a
+runDiToStderrIO :: Member (Embed IO) r => Sem (Di Df1.Level Df1.Path Df1.Message ': r) a -> Sem r a
 runDiToStderrIO m = do
   commit <- embed @IO $ DH.stderr Df1.df1
   runDiToIO commit m
 
-attr :: forall value level msg r a. (D.ToValue value, Member (Di level D.Path msg) r) => D.Key -> value -> Sem r a -> Sem r a
-attr k v = attr_ @level @msg k (D.value v)
+push :: forall level msg r a. Member (Di level Df1.Path msg) r => Df1.Segment -> Sem r a -> Sem r a
+push s = local @level @Df1.Path @msg (Df1.push s)
 
-debug :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-debug = log @D.Level @path D.Debug . D.message
+attr_ :: forall level msg r a. Member (Di level Df1.Path msg) r => Df1.Key -> Df1.Value -> Sem r a -> Sem r a
+attr_ k v = local @level @Df1.Path @msg (Df1.attr_ k v)
 
-info :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-info = log @D.Level @path D.Info . D.message
+attr :: forall value level msg r a. (Df1.ToValue value, Member (Di level Df1.Path msg) r) => Df1.Key -> value -> Sem r a -> Sem r a
+attr k v = attr_ @level @msg k (Df1.value v)
 
-notice :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-notice = log @D.Level @path D.Notice . D.message
+debug :: forall msg path r. (Df1.ToMessage msg, Member (Di Df1.Level path Df1.Message) r) => msg -> Sem r ()
+debug = log @Df1.Level @path D.Debug . Df1.message
 
-warning :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-warning = log @D.Level @path D.Warning . D.message
+info :: forall msg path r. (Df1.ToMessage msg, Member (Di Df1.Level path Df1.Message) r) => msg -> Sem r ()
+info = log @Df1.Level @path D.Info . Df1.message
 
-error :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-error = log @D.Level @path D.Error . D.message
+notice :: forall msg path r. (Df1.ToMessage msg, Member (Di Df1.Level path Df1.Message) r) => msg -> Sem r ()
+notice = log @Df1.Level @path D.Notice . Df1.message
 
-alert :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-alert = log @D.Level @path D.Alert . D.message
+warning :: forall msg path r. (Df1.ToMessage msg, Member (Di Df1.Level path Df1.Message) r) => msg -> Sem r ()
+warning = log @Df1.Level @path D.Warning . Df1.message
 
-critical :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-critical = log @D.Level @path D.Critical . D.message
+error :: forall msg path r. (Df1.ToMessage msg, Member (Di Df1.Level path Df1.Message) r) => msg -> Sem r ()
+error = log @Df1.Level @path D.Error . Df1.message
 
-emergency :: forall msg path r. (D.ToMessage msg, Member (Di D.Level path D.Message) r) => msg -> Sem r ()
-emergency = log @D.Level @path D.Emergency . D.message
+alert :: forall msg path r. (Df1.ToMessage msg, Member (Di Df1.Level path Df1.Message) r) => msg -> Sem r ()
+alert = log @Df1.Level @path D.Alert . Df1.message
 
-debug_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-debug_ = log @D.Level @path D.Debug
+critical :: forall msg path r. (Df1.ToMessage msg, Member (Di Df1.Level path Df1.Message) r) => msg -> Sem r ()
+critical = log @Df1.Level @path D.Critical . Df1.message
 
-info_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-info_ = log @D.Level @path D.Info
+emergency :: forall msg path r. (Df1.ToMessage msg, Member (Di Df1.Level path Df1.Message) r) => msg -> Sem r ()
+emergency = log @Df1.Level @path D.Emergency . Df1.message
 
-notice_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-notice_ = log @D.Level @path D.Notice
+debug_ :: forall path r. Member (Di Df1.Level path Df1.Message) r => Df1.Message -> Sem r ()
+debug_ = log @Df1.Level @path D.Debug
 
-warning_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-warning_ = log @D.Level @path D.Warning
+info_ :: forall path r. Member (Di Df1.Level path Df1.Message) r => Df1.Message -> Sem r ()
+info_ = log @Df1.Level @path D.Info
 
-error_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-error_ = log @D.Level @path D.Error
+notice_ :: forall path r. Member (Di Df1.Level path Df1.Message) r => Df1.Message -> Sem r ()
+notice_ = log @Df1.Level @path D.Notice
 
-alert_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-alert_ = log @D.Level @path D.Alert
+warning_ :: forall path r. Member (Di Df1.Level path Df1.Message) r => Df1.Message -> Sem r ()
+warning_ = log @Df1.Level @path D.Warning
 
-critical_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-critical_ = log @D.Level @path D.Critical
+error_ :: forall path r. Member (Di Df1.Level path Df1.Message) r => Df1.Message -> Sem r ()
+error_ = log @Df1.Level @path D.Error
 
-emergency_ :: forall path r. Member (Di D.Level path D.Message) r => D.Message -> Sem r ()
-emergency_ = log @D.Level @path D.Emergency
+alert_ :: forall path r. Member (Di Df1.Level path Df1.Message) r => Df1.Message -> Sem r ()
+alert_ = log @Df1.Level @path D.Alert
+
+critical_ :: forall path r. Member (Di Df1.Level path Df1.Message) r => Df1.Message -> Sem r ()
+critical_ = log @Df1.Level @path D.Critical
+
+emergency_ :: forall path r. Member (Di Df1.Level path Df1.Message) r => Df1.Message -> Sem r ()
+emergency_ = log @Df1.Level @path D.Emergency

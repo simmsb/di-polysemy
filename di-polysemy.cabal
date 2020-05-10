@@ -1,13 +1,13 @@
 cabal-version: 1.18
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 93f340ca37d94462e42059fc783835ed9e0580694e7d37254908ebabefcc0fb6
+-- hash: ae3ff1a37592db18d658e1f2b0ecdf715409297f5e16c9acdf72d1228908a854
 
 name:           di-polysemy
-version:        0.1.1.2
+version:        0.1.2.0
 synopsis:       DI logger wrapped for Polysemy
 description:    Please see the README on GitHub at <https://github.com/nitros12/di-polysemy>
 category:       Logging
