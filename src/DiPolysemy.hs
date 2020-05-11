@@ -5,6 +5,7 @@ module DiPolysemy
     , log
     , flush
     , local
+    , reset
     , push
     , attr_
     , attr
@@ -42,6 +43,7 @@ data Di level path msg m a where
   Log    :: level -> msg -> Di level path msg m ()
   Flush  :: Di level path msg m ()
   Local  :: (DC.Di level path msg -> DC.Di level path msg) -> m a -> Di level path msg m a
+  Reset  :: m a -> Di level path msg m a
 
 makeSem ''Di
 
@@ -65,24 +67,35 @@ diToIO = interpretH
                                finish
                                pure res))
 
+type DiR level msg = (DC.Di level Df1.Path msg, DC.Di level Df1.Path msg)
+
+dup :: a -> (a, a)
+dup a = (a, a)
+
 runDiToIO
   :: forall r level msg a.
   Member (Embed IO) r
   => (DC.Log level Df1.Path msg -> IO ())
   -> Sem (Di level Df1.Path msg ': r) a
   -> Sem r a
-runDiToIO commit m = diToIO $ runDiIOInner commit (flip P.runReader $ go (raiseUnder m))
+runDiToIO commit m = diToIO $ runDiIOInner commit (flip (P.runReader . dup) $ go (raiseUnder m))
   where
-    go :: Member (Embed IO) r0 => Sem (Di level Df1.Path msg ': r0) a0 -> Sem (P.Reader (DC.Di level Df1.Path msg) ': r0) a0
+    go :: Member (Embed IO) r0
+      => Sem (Di level Df1.Path msg ': r0) a0
+      -> Sem (P.Reader (DiR level msg) ': r0) a0
     go = reinterpretH $ \case
       Log level msg -> do
-        di <- P.ask @(DC.Di level Df1.Path msg)
-        r <- embed @IO $ DC.log di level msg
-        pureT r
-      Flush         -> P.ask @(DC.Di level Df1.Path msg) >>= embed @IO . DC.flush >>= pureT
+        (_, di) <- P.ask @(DiR level msg)
+        (embed @IO $ DC.log di level msg) >>= pureT
+      Flush         -> do
+        (_, di) <- P.ask @(DiR level msg)
+        (embed @IO $ DC.flush di) >>= pureT
       Local f m     -> do
         m' <- go <$> runT m
-        raise $ subsume $ P.local @(DC.Di level Df1.Path msg) f m'
+        raise $ subsume $ P.local @(DiR level msg) (fmap f) m'
+      Reset m       -> do
+        m' <- go <$> runT m
+        raise $ subsume $ P.local @(DiR level msg) (\(odi, _) -> (odi, odi)) m'
 
 runDiToStderrIO :: Member (Embed IO) r => Sem (Di Df1.Level Df1.Path Df1.Message ': r) a -> Sem r a
 runDiToStderrIO m = do
