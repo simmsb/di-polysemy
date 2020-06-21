@@ -2,6 +2,8 @@ module DiPolysemy
     ( Di(..)
     , runDiToIO
     , runDiToStderrIO
+    , runDiToIOFinal
+    , runDiToStderrIOFinal
     , log
     , flush
     , local
@@ -38,6 +40,9 @@ import           Polysemy
 import qualified Polysemy.Reader as P
 
 import           Prelude                    hiding ( error, log )
+import Control.Concurrent (takeMVar, MVar, putMVar, newEmptyMVar)
+import Polysemy.Async (asyncToIOFinal, async)
+import Polysemy.Resource (resourceToIOFinal, bracket)
 
 data Di level path msg m a where
   Log    :: level -> msg -> Di level path msg m ()
@@ -69,21 +74,10 @@ diToIO = interpretH
 
 type DiR level msg = (DC.Di level Df1.Path msg, DC.Di level Df1.Path msg)
 
-dup :: a -> (a, a)
-dup a = (a, a)
-
-runDiToIO
-  :: forall r level msg a.
-  Member (Embed IO) r
-  => (DC.Log level Df1.Path msg -> IO ())
-  -> Sem (Di level Df1.Path msg ': r) a
-  -> Sem r a
-runDiToIO commit m = diToIO $ runDiIOInner commit (flip (P.runReader . dup) $ go (raiseUnder m))
-  where
-    go :: Member (Embed IO) r0
-      => Sem (Di level Df1.Path msg ': r0) a0
-      -> Sem (P.Reader (DiR level msg) ': r0) a0
-    go = reinterpretH $ \case
+interpretDi :: forall r a level msg. Members '[Embed IO, P.Reader (DiR level msg)] r
+      => Sem (Di level Df1.Path msg ': r) a
+      -> Sem r a
+interpretDi = interpretH $ \case
       Log level msg -> do
         (_, di) <- P.ask @(DiR level msg)
         (embed @IO $ DC.log di level msg) >>= pureT
@@ -91,11 +85,53 @@ runDiToIO commit m = diToIO $ runDiIOInner commit (flip (P.runReader . dup) $ go
         (_, di) <- P.ask @(DiR level msg)
         (embed @IO $ DC.flush di) >>= pureT
       Local f m     -> do
-        m' <- go <$> runT m
-        raise $ subsume $ P.local @(DiR level msg) (fmap f) m'
+        m' <- interpretDi <$> runT m
+        raise $ P.local @(DiR level msg) (fmap f) m'
       Reset m       -> do
-        m' <- go <$> runT m
-        raise $ subsume $ P.local @(DiR level msg) (\(odi, _) -> (odi, odi)) m'
+        m' <- interpretDi <$> runT m
+        raise $ P.local @(DiR level msg) (\(odi, _) -> (odi, odi)) m'
+
+dup :: a -> (a, a)
+dup a = (a, a)
+
+runDiToIOFinal
+  :: forall r level msg a.
+  Members '[Final IO, Embed IO] r
+  => (DC.Log level Df1.Path msg -> IO ())
+  -> Sem (Di level Df1.Path msg ': r) a
+  -> Sem r a
+runDiToIOFinal commit m = do
+  diIn <- embedFinal newEmptyMVar
+  diOut <- embedFinal newEmptyMVar
+  void . asyncToIOFinal . async . embedFinal $ DC.new commit $ outer diIn diOut
+  inner diIn diOut
+  where
+    outer :: MVar (DC.Di level Df1.Path msg) -> MVar (DC.Di level Df1.Path msg) -> (DC.Di level Df1.Path msg) -> IO ()
+    outer aIn aOut a = do
+      putMVar aIn a
+      void $ takeMVar aOut
+
+    inner :: MVar (DC.Di level Df1.Path msg) -> MVar (DC.Di level Df1.Path msg) -> Sem r a
+    inner diIn diOut = resourceToIOFinal $ bracket
+                       (embedFinal $ takeMVar diIn)
+                       (embedFinal . putMVar diOut)
+                       (\di -> raise . P.runReader (di, di) $ interpretDi (raiseUnder $ m))
+
+runDiToStderrIOFinal :: Members '[Final IO, Embed IO] r => Sem (Di Df1.Level Df1.Path Df1.Message ': r) a -> Sem r a
+runDiToStderrIOFinal m = do
+  commit <- embedFinal @IO $ DH.stderr Df1.df1
+  runDiToIOFinal commit m
+
+runDiToIO
+  :: forall r level msg a.
+  Member (Embed IO) r
+  => (DC.Log level Df1.Path msg -> IO ())
+  -> Sem (Di level Df1.Path msg ': r) a
+  -> Sem r a
+runDiToIO commit m = diToIO inner
+  where inner :: Sem (DiIOInner ': r) a
+        inner = runDiIOInner commit (raise . flip (P.runReader . dup) (interpretDi $ raiseUnder m))
+
 
 runDiToStderrIO :: Member (Embed IO) r => Sem (Di Df1.Level Df1.Path Df1.Message ': r) a -> Sem r a
 runDiToStderrIO m = do
