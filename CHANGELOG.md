@@ -7,7 +7,8 @@ The changelog is available [on GitHub][2].
 
 * `runDiToStderrIO`, `runDiToIOFinal`, `runDiToStderrIOFinal` and the `Reset`
   action have been removed.
-* `runDiToIOReader` has been added.
+* The `Fetch` action has been added.
+* `runDiToIOReader`, and `runDiNoop` has been added.
 * `runDiToIO` now needs a `Di` value to be passed to it, the library now doesn't
   create the Di value.
 

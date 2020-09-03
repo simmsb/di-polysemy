@@ -2,9 +2,11 @@ module DiPolysemy
     ( Di(..)
     , runDiToIOReader
     , runDiToIO
+    , runDiNoop
     , log
     , flush
     , local
+    , fetch
     , push
     , attr_
     , attr
@@ -41,6 +43,8 @@ data Di level path msg m a where
   Log    :: level -> msg -> Di level path msg m ()
   Flush  :: Di level path msg m ()
   Local  :: (DC.Di level path msg -> DC.Di level path msg) -> m a -> Di level path msg m a
+  -- | Fetch the current Di value, 'Maybe' to allow for no-op implementations
+  Fetch  :: Di level path msg m (Maybe (DC.Di level path msg))
 
 makeSem ''Di
 
@@ -57,6 +61,9 @@ runDiToIOReader = interpretH $ \case
       Local f m     -> do
         m' <- runDiToIOReader <$> runT m
         raise $ P.local @(DC.Di level Df1.Path msg) f m'
+      Fetch -> do
+        di <- Just <$> P.ask @(DC.Di level Df1.Path msg)
+        pureT di
 
 runDiToIO :: forall r level msg a. Member (Embed IO) r
   => DC.Di level Df1.Path msg
@@ -64,28 +71,12 @@ runDiToIO :: forall r level msg a. Member (Embed IO) r
   -> Sem r a
 runDiToIO di = P.runReader di . runDiToIOReader . raiseUnder
 
--- runDiToIOFinal
---   :: forall r level msg a.
---   Members '[Final IO, Embed IO] r
---   => (DC.Log level Df1.Path msg -> IO ())
---   -> Sem (Di level Df1.Path msg ': r) a
---   -> Sem r a
--- runDiToIOFinal commit m = do
---   diIn <- embedFinal newEmptyMVar
---   diOut <- embedFinal newEmptyMVar
---   void . asyncToIOFinal . async . embedFinal $ DC.new commit $ outer diIn diOut
---   inner diIn diOut
---   where
---     outer :: MVar (DC.Di level Df1.Path msg) -> MVar (DC.Di level Df1.Path msg) -> (DC.Di level Df1.Path msg) -> IO ()
---     outer aIn aOut a = do
---       putMVar aIn a
---       void $ takeMVar aOut
-
---     inner :: MVar (DC.Di level Df1.Path msg) -> MVar (DC.Di level Df1.Path msg) -> Sem r a
---     inner diIn diOut = resourceToIOFinal $ bracket
---                        (embedFinal $ takeMVar diIn)
---                        (embedFinal . putMVar diOut)
---                        (\di -> raise . P.runReader (di, di) $ interpretDi (raiseUnder $ m))
+runDiNoop :: forall r level msg a. Sem (Di level Df1.Path msg ': r) a -> Sem r a
+runDiNoop = interpretH \case
+      Log _level _msg -> pureT ()
+      Flush           -> pureT ()
+      Local _f  m     -> runDiNoop <$> runT m >>= raise
+      Fetch           -> pureT Nothing
 
 push :: forall level msg r a. Member (Di level Df1.Path msg) r => Df1.Segment -> Sem r a -> Sem r a
 push s = local @level @Df1.Path @msg (Df1.push s)
