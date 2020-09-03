@@ -4,10 +4,10 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7d5a66b6c7f2d80869176c92262777e8ff5e62c94a600d922c5ee4a2d4a75b77
+-- hash: a0bb51a5a8806c6d7ff483420aa6c02be35a5f140268a5366b07fecb070832d0
 
 name:           di-polysemy
-version:        0.1.4.0
+version:        0.2.0.0
 synopsis:       DI logger wrapped for Polysemy
 description:    Please see the README on GitHub at <https://github.com/nitros12/di-polysemy>
 category:       Logging

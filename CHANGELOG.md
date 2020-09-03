@@ -3,6 +3,14 @@
 `di-polysemy` uses [PVP Versioning][1].
 The changelog is available [on GitHub][2].
 
+## 0.2.0.0
+
+* `runDiToStderrIO`, `runDiToIOFinal`, `runDiToStderrIOFinal` and the `Reset`
+  action have been removed.
+* `runDiToIOReader` has been added.
+* `runDiToIO` now needs a `Di` value to be passed to it, the library now doesn't
+  create the Di value.
+
 ## 0.1.4.0
 
 * `runDiToIOFinal` and `runDiToStderrIOFinal` have been added
